@@ -18,7 +18,7 @@ import sys
 import numpy as np
 from numpy import dot, cross
 from numpy.linalg import det, norm
-import csl_generator as cslgen
+import gb_code.csl_generator as cslgen
 import warnings
 
 
@@ -475,7 +475,7 @@ def main():
     if len(sys.argv) == 2:
         io_file = sys.argv[1]
         file = open(io_file, 'r')
-        in_params = yaml.load(file)
+        in_params = yaml.safe_load(file)
 
         try:
             axis = np.array(in_params['axis'])
