@@ -1,4 +1,3 @@
-
 # !/usr/bin/env python
 """
 This module produces GB structures. You need to run csl_generator first
@@ -7,7 +6,7 @@ to get the info necessary for your grain boundary of interest.
  The code runs in one mode only and takes all the necessary options to write
  a final GB structure from the input io_file, which is written  after you run
  csl_generator.py. You must customize the io_file that comes with some default
- values. For ex.: input the GB_plane of interest from  running the
+ values. For ex.: input the gb_plane of interest from  running the
  CSl_generator in the second mode. Once you have completed customizing the
  io_file, run:
 
@@ -50,6 +49,7 @@ class GB_character:
         self.whichG = 'g1'
         self.trans = False
         self.File = 'LAMMPS'
+        self.atomic_symbol = 'Al'  # Default symbol
 
     def ParseGB(self, axis, basis, LatP, m, n, gb):
         """
@@ -82,7 +82,7 @@ class GB_character:
             except:
                 print("""
                     Could not find the orthogonal cells.... Most likely the
-                    input GB_plane is "NOT" a CSL plane. Go back to the first
+                    input gb_plane is "NOT" a CSL plane. Go back to the first
                     script and double check!
                     """)
                 sys.exit()
@@ -137,8 +137,10 @@ class GB_character:
                     self.Write_to_Lammps(count)
                 elif self.File == "VASP":
                     self.Write_to_Vasp(count)
+                elif self.File == "xyz":
+                    self.Write_to_xyz(count)
                 else:
-                    print("The output file must be either LAMMPS or VASP!")
+                    print("The output file must be either LAMMPS, VASP, or xyz!")
             elif self.trans:
                 self.Translate(a, b)
 
@@ -162,8 +164,10 @@ class GB_character:
                     self.Write_to_Lammps(count)
                 elif self.File == "VASP":
                     self.Write_to_Vasp(count)
+                elif self.File == "xyz":
+                    self.Write_to_xyz(count)
                 else:
-                    print("The output file must be either LAMMPS or VASP!")
+                    print("The output file must be either LAMMPS, VASP, or xyz!")
         else:
             print('Overlap distance is not inputted incorrectly!')
             sys.exit()
@@ -372,8 +376,17 @@ class GB_character:
                     atoms1_new = XX.copy() + shift
                     self.atoms1 = atoms1_new
                     self.Write_to_Vasp(count)
+        elif self.File == 'xyz':
+
+            for i in range(a):
+                for j in range(b):
+                    count += 1
+                    shift = i * shift1 + j * shift2
+                    atoms1_new = XX.copy() + shift
+                    self.atoms1 = atoms1_new
+                    self.Write_to_xyz(count)
         else:
-            print("The output file must be either LAMMPS or VASP!")
+            print("The output file must be either LAMMPS, VASP, or xyz!")
 
     def Write_to_Vasp(self, trans):
         """
@@ -466,6 +479,32 @@ class GB_character:
             np.savetxt(f, FinalMat, fmt='%i %i %.8f %.8f %.8f')
         f.close()
 
+    def Write_to_xyz(self, trans):
+        """
+        write a single GB without translations to xyz format.
+        """
+        name = self.atomic_symbol + '_input_G'
+        plane = str(self.gbplane[0])+str(self.gbplane[1])+str(self.gbplane[2])
+        if self.overD > 0:
+            overD = str(self.overD)
+        else:
+            overD = str(None)
+        Trans = str(trans)
+
+        X = self.atoms1.copy()
+        Y = self.atoms2.copy()
+        X_new = X * self.LatP
+        Y_new = Y * self.LatP
+        
+        Wf = np.concatenate((X_new, Y_new))
+        NumberAt = len(Wf)
+
+        with open(name + plane + '_' + overD + '_' + Trans + '.xyz', 'w') as f:
+            f.write('{}\n\n'.format(NumberAt))
+            for coord in Wf:
+                f.write('{} {:.8f} {:.8f} {:.8f}\n'.format(
+                    self.atomic_symbol, coord[0], coord[1], coord[2]))
+
     def __str__(self):
         return "GB_character"
 
@@ -482,7 +521,7 @@ def main():
             m = int(in_params['m'])
             n = int(in_params['n'])
             basis = str(in_params['basis'])
-            gbplane = np.array(in_params['GB_plane'])
+            gbplane = np.array(in_params['gb_plane'])
             LatP = in_params['lattice_parameter']
             overlap = in_params['overlap_distance']
             whichG = in_params['which_g']
@@ -490,7 +529,8 @@ def main():
             a = in_params['a']
             b = in_params['b']
             dim1, dim2, dim3 = in_params['dimensions']
-            file = in_params['File_type']
+            file = in_params['file_type']
+            atomic_symbol = in_params.get('atomic_symbol', 'XX')  # Default to XX if not specified
 
         except:
             print('Make sure the input argumnets in io_file are'
@@ -500,6 +540,7 @@ def main():
         ###################
 
         gbI = GB_character()
+        gbI.atomic_symbol = atomic_symbol
         gbI.ParseGB(axis, basis, LatP, m, n, gbplane)
         gbI.CSL_Bicrystal_Atom_generator()
 

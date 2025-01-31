@@ -1,5 +1,5 @@
 # GB_code [![DOI](http://joss.theoj.org/papers/10.21105/joss.00900/status.svg)](https://doi.org/10.21105/joss.00900) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1433531.svg)](https://doi.org/10.5281/zenodo.1433531)
-This python package helps you create orthogonal grain boundary supercells for atomistic calculations. The code is based on the coincident site lattice (CSL) formulations for cubic materials (sc, bcc, fcc, diamond). I intend to extend it to hcp structures soon. The code produces a final structure to be read in [LAMMPS](https://lammps.sandia.gov/) or [VASP](https://www.vasp.at/).  
+This python package helps you create orthogonal grain boundary supercells for atomistic calculations. The code is based on the coincident site lattice (CSL) formulations for cubic materials (sc, bcc, fcc, diamond). I intend to extend it to hcp structures soon. The code produces a final structure to be read in [LAMMPS](https://lammps.sandia.gov/), [VASP](https://www.vasp.at/), or produces an xyz file that can be imported into other tools.  
 It has been designed to be simple to use and instructive with a special attention to GB plane orientation which is often lacking in other grain boundary creation codes. For more details please read the [paper](https://doi.org/10.21105/joss.00900).     
 
 # Overview
@@ -12,7 +12,7 @@ To use it locally, you will need `python> 3.5.1` and `numpy > 1.14` for the main
 # Installation guide
 For installation simply clone or download the code in your terminal and in the main directory of the package type:
 ```
-> pip install .
+> pip install -e .
 ```
 This will copy the modules to your active python site-packages, thereby making them importable in any python script and will put the scrpits in the python bin, thereby making them executable in the shell.
 
@@ -87,7 +87,7 @@ how the io_file looks like right now:
 ```
 ## input parameters for gb_generator.py ###
 # CSL plane of interest that you read from the output of csl_generator as GB1
-GB_plane: [1, 1, 1]
+gb_plane: [1, 1, 1]
 
 # lattice parameter in Angstrom
 lattice_parameter: 4
@@ -99,7 +99,7 @@ overlap_distance: 0.0
 # decide which grain the atoms should be removed from
 which_g: g1
 
-# decide whether you want rigid body translations to be done on the GB_plane or not (yes or no)
+# decide whether you want rigid body translations to be done on the gb_plane or not (yes or no)
 # When yes, for any GB aside from twist GBs, the two inplane
 # CSL vectors will be divided by integers a and b to produce a*b initial
 # configurations. The default values produce 50 initial structures
@@ -109,13 +109,15 @@ rigid_trans: no
 a: 10
 b: 5
 
-# dimensions of the supercell in: [l1,l2,l3],  where l1 isthe direction along the GB_plane normal
+# dimensions of the supercell in: [l1,l2,l3],  where l1 isthe direction along the gb_plane normal
 #  and l2 and l3 are inplane dimensions
 dimensions: [1,1,1]
 
-# File type, either VASP or LAMMPS input
-File_type: LAMMPS
+# File type, VASP, LAMMPS, or xyz input
+file_type: LAMMPS
 
+# Atomic symbol, only used for xyz input
+atom_symbol: XX
 
 # The following is your csl_generator output. YOU DO NOT NEED TO CHANGE THEM!
 
@@ -124,7 +126,7 @@ m: 7
 n: 1
 basis: diamond
 ```
-- GB_plane: must be chosen from the list that was provided after running the second mode of csl_generator.py. Here for ex: [2,  1, -2].
+- gb_plane: must be chosen from the list that was provided after running the second mode of csl_generator.py. Here for ex: [2,  1, -2].
 Change the default plane to your chosen one.
 - lattice_parameter: is self-explanatory.
 
@@ -146,7 +148,7 @@ You can choose a combination of atom removal and rigid body translation for find
 
 - dimensions: The supercell dimensions according to the io_file. Make sure you always choose a large enough l1 dimension that the GB and its periodic image do not interact. By default [1,1,1].
 
-- File_type: choose either LAMMPS or VASP. By default LAMMPS.
+- file_type: choose either LAMMPS or VASP. By default LAMMPS.
 
 As an example, we change the default gb_plane to [2,  1, -2], overlap_distance to 0.3 and rigid_trans to 'yes' in the io_file.
 To produce the GB of interest we go on with: [_gb_generator.py_](./gb_generator.py)

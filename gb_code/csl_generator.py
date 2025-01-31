@@ -713,12 +713,15 @@ def Write_to_io(axis, m, n, basis):
     It also contains the output from the usage of csl_generator.py.
     """
 
-    my_dict = {'GB_plane': str([axis[0], axis[1], axis[2]]),
+    axis_str = str([int(i) for i in axis])
+    
+    my_dict = {'gb_plane': axis_str,
                'lattice_parameter': '4',
                'overlap_distance': '0.0', 'which_g': 'g1',
                'rigid_trans': 'no', 'a': '10', 'b': '5',
                'dimensions': '[1,1,1]',
-               'File_type': 'LAMMPS'}
+               'file_type': 'LAMMPS',
+               'atomic_symbol': 'XX'}
 
     with open('io_file', 'w') as f:
         f.write('### input parameters for gb_generator.py ### \n')
@@ -739,7 +742,7 @@ def Write_to_io(axis, m, n, basis):
         f.write(list(my_dict.keys())[3]+': ' + str(list(my_dict.values())[3]) +
                 '\n\n')
         f.write('# decide whether you want rigid body translations to be done '
-                'on the GB_plane or not (yes or no)\n')
+                'on the gb_plane or not (yes or no)\n')
 
         f.write('# When yes, for any GB aside from twist GBs, the two inplane \n'
         '# CSL vectors will be divided by integers a and b to produce a*b initial \n'
@@ -757,16 +760,19 @@ def Write_to_io(axis, m, n, basis):
                 str(list(my_dict.values())[6]) + '\n\n')
 
         f.write('# dimensions of the supercell in: [l1,l2,l3],  where l1 is'
-                'the direction along the GB_plane normal\n')
+                'the direction along the gb_plane normal\n')
         f.write('#  and l2 and l3 are inplane dimensions \n')
         f.write(list(my_dict.keys())[7] + ': ' + list(my_dict.values())[7] +
                 '\n\n')
-        f.write('# File type, either VASP or LAMMPS input \n')
+        f.write('# File type, VASP, LAMMPS, or xyz input \n')
         f.write(list(my_dict.keys())[8] + ': ' + list(my_dict.values())[8] +
+                '\n\n\n')
+        f.write('# Atomic symbol, only used for xyz input \n')
+        f.write(list(my_dict.keys())[9] + ': ' + list(my_dict.values())[9] +
                 '\n\n\n')
         f.write('# The following is your csl_generator output.'
                 ' YOU DO NOT NEED TO CHANGE THEM! \n\n')
-        f.write('axis'+': ' + str([axis[0], axis[1], axis[2]]) + '\n')
+        f.write('axis'+': ' + axis_str + '\n')
         f.write('m' + ': ' + str(m) + '\n')
         f.write('n' + ': ' + str(n) + '\n')
         f.write('basis' + ': ' + str(basis) + '\n')
